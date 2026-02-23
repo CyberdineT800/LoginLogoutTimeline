@@ -245,7 +245,7 @@ function RenameDialog({ drivers, onConfirm, onCancel }) {
 
 // ─── single row ────
 
-function TimelineRow({ row, driverName, minAbsMins, totalMins, enabled, onContextMenu, onEventContextMenu, onDragEnd }) {
+function TimelineRow({ row, driverName, minAbsMins, totalMins, enabled, onContextMenu, onEventContextMenu, onDragEnd, transferState, onDurClick }) {
   const barRef = useRef();
 
   const getAbsMinsAtX = (clientX) => {
@@ -305,19 +305,27 @@ function TimelineRow({ row, driverName, minAbsMins, totalMins, enabled, onContex
           borderRadius: 5, cursor: enabled ? "crosshair" : "not-allowed", userSelect: "none",
         }}
       >
-        {/* Duration circles */}
+        {/* Duration circles — clickable for transfer selection */}
         {durations.map((dur, i) => {
           const mid = (eventPos(points[i].datetime) + eventPos(points[i + 1].datetime)) / 2;
+          const sel = transferState;
+          const isFrom = sel?.step === "from" && sel.fromIdx === i && sel.rowId === row.id;
+          const isTo   = sel?.step === "to"   && sel.toIdx   === i && sel.rowId === row.id;
+          const isFromPending = sel?.step === "to" && sel.fromIdx === i && sel.rowId === row.id;
+          const highlight = isFrom || isTo ? "#ffe066" : isFromPending ? "#88aaff" : "#c0c0ff";
+          const ring = isFrom || isFromPending ? "2px solid #ffe066" : isTo ? "2px solid #44ff88" : "none";
           return (
-            <div key={i} style={{
-              position: "absolute", left: `${mid}%`, top: "50%", transform: "translate(-50%, -50%)",
-              background: "transparent", 
-              // border: `1px solid ${C.durationBorder}`,
-              // borderRadius: "50%", minWidth: 28, height: 28,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: 11, color: "#c0c0ff", fontFamily: "monospace",
-              zIndex: 2, pointerEvents: "none", padding: "0 4px", whiteSpace: "nowrap",
-            }}>
+            <div key={i}
+              onClick={() => enabled && onDurClick && onDurClick(row.id, i, dur)}
+              style={{
+                position: "absolute", left: `${mid}%`, top: "50%", transform: "translate(-50%, -50%)",
+                background: "transparent",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 11, color: highlight, fontFamily: "monospace",
+                zIndex: 2, padding: "0 4px", whiteSpace: "nowrap",
+                cursor: enabled ? "pointer" : "default",
+                outline: ring, borderRadius: 4,
+              }}>
               {minutesToDecimal(dur)}
             </div>
           );
@@ -410,7 +418,12 @@ function TimeAxis({ minAbsMins, totalMins }) {
 function Table({ table, drivers, zoom, onUpdate, onDelete }) {
   const [ctx, setCtx] = useState(null);
   const [dialog, setDialog] = useState(null);
-  const [transferDlg, setTransferDlg] = useState(null);
+  // const [transferDlg, setTransferDlg] = useState(null);
+  // transferState: null | { step:"from", rowId, fromIdx, fromDur }
+  //                       | { step:"to",   rowId, fromIdx, fromDur, toIdx, toDur }
+  //                       | { step:"amount", rowId, fromIdx, fromDur, toIdx, toDur }
+  const [transferState, setTransferState] = useState(null);
+  const [transferAmount, setTransferAmount] = useState("");
 
   const minAbsMins = dtToMins(table.minDatetime);
   const maxAbsMins = dtToMins(table.maxDatetime);
@@ -439,10 +452,8 @@ function Table({ table, drivers, zoom, onUpdate, onDelete }) {
     const label = formatDisplay(defaultDatetime);
     setCtx({
       x, y, items: [
-        { label: `Login at ${label}`, action: () => setDialog({ rowId, defaultDatetime, type: "login" }) },
+        { label: `Login at ${label}`,  action: () => setDialog({ rowId, defaultDatetime, type: "login" }) },
         { label: `Logout at ${label}`, action: () => setDialog({ rowId, defaultDatetime, type: "logout" }) },
-        { separator: true },
-        { label: "Transfer time between durations…", action: () => setTransferDlg({ rowId }) },
       ]
     });
   };
@@ -450,8 +461,25 @@ function Table({ table, drivers, zoom, onUpdate, onDelete }) {
   const handleEventContextMenu = (x, y, rowId, evId) =>
     setCtx({ x, y, items: [{ label: "Delete event", danger: true, action: () => deleteEvent(rowId, evId) }] });
 
-  const applyTransfer = (rowId, fromIdx, toIdx, minutes) => {
+  const handleDurClick = (rowId, durIdx, durMins) => {
+    setTransferState(prev => {
+      if (!prev || prev.step === "from") {
+        return { step: "to", rowId, fromIdx: durIdx, fromDur: durMins };
+      }
+      if (prev.step === "to" && prev.rowId === rowId) {
+        if (durIdx === prev.fromIdx) {
+          return null;
+        }
+        return { step: "amount", rowId, fromIdx: prev.fromIdx, fromDur: prev.fromDur, toIdx: durIdx, toDur: durMins };
+      }
+      return { step: "to", rowId, fromIdx: durIdx, fromDur: durMins };
+    });
+    setTransferAmount("");
+  };
+
+  const applyTransfer = (rowId, fromIdx, fromDur, toIdx, toDur, minutes) => {
     const row = table.rows.find(r => r.id === rowId);
+    if (!row) return;
     const events = [...row.events].sort((a, b) => dtToMins(a.datetime) - dtToMins(b.datetime));
     const direction = toIdx > fromIdx ? 1 : -1;
     const lo = Math.min(fromIdx, toIdx);
@@ -461,13 +489,21 @@ function Table({ table, drivers, zoom, onUpdate, onDelete }) {
         ? { ...ev, datetime: minsToDatetime(dtToMins(ev.datetime) + direction * minutes) }
         : ev
     );
-    const histEntry = { id: uid(), rowId, fromIdx, toIdx, minutes, timestamp: new Date().toLocaleTimeString() };
+    const histEntry = {
+      id: uid(),
+      driverKey: row.driverKey,          
+      fromIdx, fromDur,                 
+      toIdx, toDur,
+      minutes,
+      timestamp: new Date().toLocaleTimeString(),
+    };
     onUpdate({
       ...table,
       rows: table.rows.map(r => r.id === rowId ? { ...r, events: newEvents } : r),
-      history: [...(table.history || []), histEntry]
+      history: [...(table.history || []), histEntry],
     });
-    setTransferDlg(null);
+    setTransferState(null);
+    setTransferAmount("");
   };
 
   return (
@@ -487,19 +523,19 @@ function Table({ table, drivers, zoom, onUpdate, onDelete }) {
         <label style={{ color: C.textDim, fontFamily: "monospace", fontSize: 14 }}>To:</label>
         <input type="datetime-local" value={table.maxDatetime}
           onChange={e => onUpdate({ ...table, maxDatetime: e.target.value })} style={inputStyle} />
-        <button onClick={() => onUpdate({ ...table, enabled: !table.enabled })}
+        <button disabled={true} 
+          onClick={() => onUpdate({ ...table, enabled: !table.enabled })}
           style={btnStyle(table.enabled ? "#1c3a1c" : "#3a1c1c")}>
           {table.enabled ? <FcOk /> : <FcCancel />} {table.enabled ? "Enabled" : "Disabled"}
         </button>
-        <button onClick={onDelete} style={{ ...btnStyle("#3a1c1c"), marginLeft: "auto" }}><FcCancel /> Remove</button>
+        <button disabled={!table.enabled}
+          onClick={onDelete} style={{ ...btnStyle("#3a1c1c"), marginLeft: "auto" }}><FcCancel /> Remove</button>
       </div>
 
       {/* Two-column layout: fixed driver labels | scrollable timeline */}
       <div style={{ display: "flex", alignItems: "stretch" }}>
-
-        {/* Fixed left column — driver names, stays visible during horizontal scroll */}
+        {/* Fixed left column */}
         <div style={{ flexShrink: 0, width: 56, marginRight: 8 }}>
-          {/* Spacer matching TimeAxis height */}
           <div style={{ height: 54 }} />
           {table.rows.map(row => {
             const driver = drivers.find(d => d.key === row.driverKey) || { name: row.driverKey };
@@ -531,6 +567,8 @@ function Table({ table, drivers, zoom, onUpdate, onDelete }) {
                   minAbsMins={minAbsMins}
                   totalMins={totalMins}
                   enabled={table.enabled}
+                  transferState={transferState}
+                  onDurClick={handleDurClick}
                   onContextMenu={handleContextMenu}
                   onEventContextMenu={handleEventContextMenu}
                   onDragEnd={moveEvent}
@@ -539,30 +577,101 @@ function Table({ table, drivers, zoom, onUpdate, onDelete }) {
             })}
           </div>
         </div>
-
       </div>
+
+      {/* Inline transfer UI — shown below rows when 2 durations selected */}
+      {transferState?.step === "amount" && (() => {
+        const maxAmt = transferState.fromDur;
+        return (
+          <div style={{
+            marginTop: 10, display: "flex", alignItems: "center", gap: 10,
+            background: "rgba(20,20,60,0.8)", border: `1px solid ${C.border}`,
+            borderRadius: 8, padding: "8px 14px", flexWrap: "wrap",
+          }}>
+            <span style={{ color: "#ffe066", fontFamily: "monospace", fontSize: 13 }}>
+              Dur {transferState.fromIdx + 1} ({minutesToDecimal(transferState.fromDur)})
+            </span>
+            <span style={{ color: C.accentDim }}>→</span>
+            <span style={{ color: "#44ff88", fontFamily: "monospace", fontSize: 13 }}>
+              Dur {transferState.toIdx + 1} ({minutesToDecimal(transferState.toDur)})
+            </span>
+            <input
+              type="number" min={1} max={maxAmt}
+              placeholder={`minutes (max ${maxAmt})`}
+              value={transferAmount}
+              onChange={e => setTransferAmount(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === "Enter") {
+                  const amt = parseInt(transferAmount);
+                  if (amt > 0 && amt <= maxAmt)
+                    applyTransfer(transferState.rowId, transferState.fromIdx, transferState.fromDur,
+                                  transferState.toIdx, transferState.toDur, amt);
+                }
+                if (e.key === "Escape") { setTransferState(null); setTransferAmount(""); }
+              }}
+              autoFocus
+              style={{ ...inputStyle, width: 160, fontSize: 13 }}
+            />
+            <button
+              onClick={() => {
+                const amt = parseInt(transferAmount);
+                if (amt > 0 && amt <= maxAmt)
+                  applyTransfer(transferState.rowId, transferState.fromIdx, transferState.fromDur,
+                                transferState.toIdx, transferState.toDur, amt);
+              }}
+              style={btnStyle("#2a3a8a", C.text)}>Apply</button>
+            <button onClick={() => { setTransferState(null); setTransferAmount(""); }}
+              style={btnStyle("#3a1c1c", C.text)}>✕</button>
+            <span style={{ color: C.textDim, fontSize: 12 }}>
+              {transferState.step === "amount" ? "" : "Click a duration on the same row"}
+            </span>
+          </div>
+        );
+      })()}
+
+      {/* Transfer hint — when FROM is selected, waiting for TO */}
+      {transferState?.step === "to" && (
+        <div style={{
+          marginTop: 10, display: "flex", alignItems: "center", gap: 8,
+          background: "rgba(20,20,60,0.6)", border: `1px dashed ${C.accentDim}`,
+          borderRadius: 8, padding: "6px 14px",
+        }}>
+          <span style={{ color: "#88aaff", fontFamily: "monospace", fontSize: 13 }}>
+            From: Dur {transferState.fromIdx + 1} ({minutesToDecimal(transferState.fromDur)})
+          </span>
+          <span style={{ color: C.textDim, fontSize: 12 }}>— now click the destination duration</span>
+          <button onClick={() => setTransferState(null)}
+            style={{ ...btnStyle("#3a1c1c", C.text), padding: "2px 8px", fontSize: 12, marginLeft: "auto" }}>✕ Cancel</button>
+        </div>
+      )}
 
       {/* History */}
       {table.history?.length > 0 && (
         <div style={{ marginTop: 14, borderTop: `1px solid ${C.histBorder}`, paddingTop: 10 }}>
           <div style={{ color: C.textDim, fontFamily: "monospace", fontSize: 14, marginBottom: 6 }}>Transfer History:</div>
           {table.history.map(h => {
-            const rowIdx = table.rows.findIndex(r => r.id === h.rowId);
-            const driverName = rowIdx >= 0 ? (drivers.find(d => d.key === table.rows[rowIdx].driverKey)?.name || "?") : "?";
+            const driverName = h.driverKey
+              ? (drivers.find(d => d.key === h.driverKey)?.name || h.driverKey)
+              : (() => {
+                  const rowIdx = table.rows.findIndex(r => r.id === h.rowId);
+                  return rowIdx >= 0 ? (drivers.find(d => d.key === table.rows[rowIdx].driverKey)?.name || "?") : "?";
+                })();
             return (
               <div key={h.id} style={{ marginBottom: 4 }}>
                 <div style={{
                   background: C.histBg, border: `1px solid ${C.histBorder}`, borderRadius: 4,
-                  padding: "3px 10px", fontFamily: "monospace", fontSize: 14, color: "#9090cc",
-                  display: "flex", alignItems: "center", gap: 8,
+                  padding: "3px 10px", fontFamily: "monospace", fontSize: 13, color: "#9090cc",
+                  display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
                 }}>
                   <span style={{ color: C.textDim }}>{h.timestamp}</span>
                   <span>Dur {h.fromIdx + 1}</span>
+                  {h.fromDur != null && <span style={{ color: C.textDim }}>({minutesToDecimal(h.fromDur)})</span>}
                   <span style={{ color: C.accentDim }}>→</span>
                   <span>Dur {h.toIdx + 1}</span>
+                  {h.toDur != null && <span style={{ color: C.textDim }}>({minutesToDecimal(h.toDur)})</span>}
                   <span style={{ color: C.accent }}>{h.minutes}min</span>
                   <span style={{ color: C.accentDim }}>|</span>
-                  <span>{driverName}</span>
+                  <span style={{ color: C.accent }}>{driverName}</span>
                 </div>
               </div>
             );
@@ -579,13 +688,13 @@ function Table({ table, drivers, zoom, onUpdate, onDelete }) {
           onCancel={() => setDialog(null)}
         />
       )}
-      {transferDlg && (
+      {/* {transferDlg && (
         <TransferDialog
           durations={getDurations(transferDlg.rowId)}
           onConfirm={(from, to, mins) => applyTransfer(transferDlg.rowId, from, to, mins)}
           onCancel={() => setTransferDlg(null)}
         />
-      )}
+      )} */}
     </div>
   );
 }
@@ -625,10 +734,21 @@ export default function App() {
         events: last.rows[i] ? last.rows[i].events.map(ev => ({ ...ev, id: uid() })) : [],
       }));
     }
-    return [...prev, base];
+    
+    return [...prev.map(t => ({ ...t, enabled: false })), { ...base, enabled: true }];
   });
 
-  const removeTable = (id) => setTables(prev => prev.filter(t => t.id !== id));
+  const removeTable = (id) => {
+    setTables(prev => {
+      const filtered = prev.filter(t => t.id !== id);
+      if (filtered.length === 0) return [];
+      return filtered.map((t, index) => ({
+        ...t,
+        enabled: index === filtered.length - 1
+      }));
+    });
+  };
+  
   const updateTable = (updated) => setTables(prev => prev.map(t => t.id === updated.id ? updated : t));
 
   const renameDrivers = (newNames) => {
@@ -691,14 +811,19 @@ export default function App() {
 
   return (
     <div style={{
-      minHeight: "100vh",
-      width: "100vw",
-      background: "linear-gradient(135deg,rgb(24, 40, 109) 10%,rgb(50, 86, 119) 50%,rgb(5, 34, 97) 100%)",
-      padding: "24px 24px 48px", fontFamily: "monospace", fontSize: 18, color: C.text, boxSizing: "border-box",
+      minHeight: "100vh", width: "100vw",
+      background: "linear-gradient(135deg,rgb(24,40,109) 10%,rgb(50,86,119) 50%,rgb(5,34,97) 100%)",
+      padding: "0 24px 48px", fontFamily: "monospace", fontSize: 18, color: C.text, boxSizing: "border-box",
     }}>
       <div style={{ margin: "0 auto" }}>
-        {/* Top bar */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28, flexWrap: "wrap" }}>
+        {/* Sticky Top bar */}
+        <div style={{
+          position: "sticky", top: 0, zIndex: 100,
+          background: "linear-gradient(135deg,rgb(24,40,109) 10%,rgb(50,86,119) 50%,rgb(5,34,97) 100%)",
+          padding: "16px 0 12px",
+          borderBottom: `1px solid ${C.histBorder}`,
+          marginBottom: 20,
+        }}>
           <div>
             <h1 style={{ margin: 0, color: C.accent, fontSize: 22, letterSpacing: 2, fontWeight: 700 }}>DRIVERS TIMELINE</h1>
             <div style={{ color: C.accentDim, fontSize: 14, marginTop: 2 }}>
@@ -706,53 +831,59 @@ export default function App() {
             </div>
           </div>
 
-          <div style={{ marginLeft: "auto", display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {/* Driver names display + rename */}
-            <div style={{
-              display: "flex", alignItems: "center", gap: 6,
-              background: "rgba(43, 43, 170, 0.4)", border: `1px solid ${C.histBorder}`,
-              borderRadius: 7, padding: "4px 10px",
-            }}>
-              {drivers.map((d, i) => (
-                <span key={d.key} style={{ color: C.accent, fontFamily: "monospace", fontSize: 13, fontWeight: "bold" }}>
-                  {d.name}{i < drivers.length - 1 ? <span style={{ color: C.accentDim, margin: "0 4px" }}>·</span> : null}
-                </span>
-              ))}
-              <button onClick={() => setShowRename(true)} style={{
-                marginLeft: 6, padding: "2px 9px", background: "rgba(50,50,110,0.6)",
-                border: `1px solid ${C.accentDim}`, borderRadius: 5, color: C.textDim,
-                cursor: "pointer", fontFamily: "monospace", fontSize: 14,
-              }}><FcEditImage /> Rename</button>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center",
+            marginTop: 10, flexWrap: "wrap", gap: 10 }}>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={handleOpen} style={{
+                padding: "7px 16px", background: "rgba(30,50,30,0.7)", border: "1px solid rgb(82, 243, 82)",
+                borderRadius: 7, color: "#88dd88", cursor: "pointer", fontFamily: "monospace", fontSize: 16, alignSelf: "left",
+              }}><FcFolder /> Open</button>
+
+              <button onClick={handleSave} style={{
+                padding: "7px 16px", background: "rgba(30,40,70,0.7)", border: `1px solid ${C.border}`,
+                borderRadius: 7, color: C.accent, cursor: "pointer", fontFamily: "monospace", fontSize: 16, alignSelf: "left",
+              }}><FcLowPriority /> Save</button>
             </div>
 
-            <button onClick={handleOpen} style={{
-              padding: "7px 16px", background: "rgba(30,50,30,0.7)", border: "1px solid rgb(82, 243, 82)",
-              borderRadius: 7, color: "#88dd88", cursor: "pointer", fontFamily: "monospace", fontSize: 16,
-            }}><FcFolder /> Open</button>
+            <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              {/* Driver names display + rename */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: 6,
+                background: "rgba(43, 43, 170, 0.4)", border: `1px solid ${C.histBorder}`,
+                borderRadius: 7, padding: "4px 10px", alignSelf: "right",
+              }}>
+                {drivers.map((d, i) => (
+                  <span key={d.key} style={{ color: C.accent, fontFamily: "monospace", fontSize: 13, fontWeight: "bold" }}>
+                    {d.name}{i < drivers.length - 1 ? <span style={{ color: C.accentDim, margin: "0 4px" }}>·</span> : null}
+                  </span>
+                ))}
+                <button onClick={() => setShowRename(true)} style={{
+                  marginLeft: 6, padding: "2px 9px", background: "rgba(50,50,110,0.6)",
+                  border: `1px solid ${C.accentDim}`, borderRadius: 5, color: C.textDim,
+                  cursor: "pointer", fontFamily: "monospace", fontSize: 14,
+                }}><FcEditImage /> Rename</button>
+              </div>
 
-            <button onClick={handleSave} style={{
-              padding: "7px 16px", background: "rgba(30,40,70,0.7)", border: `1px solid ${C.border}`,
-              borderRadius: 7, color: C.accent, cursor: "pointer", fontFamily: "monospace", fontSize: 16,
-            }}><FcLowPriority /> Save</button>
+              <button onClick={addTable} style={{
+                padding: "7px 16px", background: "rgba(40,40,120,0.6)", border: `1px solid ${C.border}`,
+                borderRadius: 7, color: C.accent, cursor: "pointer", fontFamily: "monospace", fontSize: 16,
+                alignSelf: "right",
+              }}><FcPlus /> New Timeline</button>
 
-            <button onClick={addTable} style={{
-              padding: "7px 16px", background: "rgba(40,40,120,0.6)", border: `1px solid ${C.border}`,
-              borderRadius: 7, color: C.accent, cursor: "pointer", fontFamily: "monospace", fontSize: 16,
-            }}><FcPlus /> New Timeline</button>
-
-            {/* Zoom indicator */}
-            <div style={{
-              display: "flex", alignItems: "center", gap: 6,
-              background: "rgba(40,40,100,0.5)", border: `1px solid ${C.histBorder}`,
-              borderRadius: 7, padding: "4px 12px", fontFamily: "monospace",
-              fontSize: 13, color: C.textDim, userSelect: "none",
-            }}>
-              <FcSearch /> {Math.round(zoom * 100)}%
-              <button onClick={() => setZoom(1)} style={{
-                marginLeft: 4, padding: "1px 7px", background: "rgba(60,60,120,0.5)",
-                border: `1px solid ${C.accentDim}`, borderRadius: 4, color: C.textDim,
-                cursor: "pointer", fontFamily: "monospace", fontSize: 11,
-              }}>reset</button>
+              {/* Zoom indicator */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: 6,
+                background: "rgba(40,40,100,0.5)", border: `1px solid ${C.histBorder}`,
+                borderRadius: 7, padding: "4px 12px", fontFamily: "monospace",
+                fontSize: 13, color: C.textDim, userSelect: "none", alignSelf: "right",
+              }}>
+                <FcSearch /> {Math.round(zoom * 100)}%
+                <button onClick={() => setZoom(1)} style={{
+                  marginLeft: 4, padding: "1px 7px", background: "rgba(60,60,120,0.5)",
+                  border: `1px solid ${C.accentDim}`, borderRadius: 4, color: C.textDim,
+                  cursor: "pointer", fontFamily: "monospace", fontSize: 11,
+                }}>reset</button>
+              </div>
             </div>
           </div>
         </div>
