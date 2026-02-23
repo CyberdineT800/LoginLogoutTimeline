@@ -1,0 +1,739 @@
+{
+  "version": 1,
+  "drivers": [
+    {
+      "key": "d7",
+      "name": "Sh1"
+    },
+    {
+      "key": "d8",
+      "name": "Sh2"
+    }
+  ],
+  "tables": [
+    {
+      "id": 9,
+      "minDatetime": "2026-02-14T00:00",
+      "maxDatetime": "2026-02-15T04:00",
+      "enabled": false,
+      "rows": [
+        {
+          "id": 10,
+          "driverKey": "d7",
+          "events": [
+            {
+              "id": 11,
+              "datetime": "2026-02-14T04:20",
+              "type": "logout"
+            },
+            {
+              "id": 12,
+              "datetime": "2026-02-14T04:40",
+              "type": "login"
+            },
+            {
+              "id": 13,
+              "datetime": "2026-02-14T12:40",
+              "type": "logout"
+            },
+            {
+              "id": 14,
+              "datetime": "2026-02-14T16:40",
+              "type": "login"
+            },
+            {
+              "id": 15,
+              "datetime": "2026-02-14T18:40",
+              "type": "logout"
+            },
+            {
+              "id": 16,
+              "datetime": "2026-02-14T22:42",
+              "type": "login"
+            },
+            {
+              "id": 82,
+              "datetime": "2026-02-15T01:40",
+              "type": "logout"
+            }
+          ]
+        },
+        {
+          "id": 18,
+          "driverKey": "d8",
+          "events": [
+            {
+              "id": 19,
+              "datetime": "2026-02-14T04:10",
+              "type": "logout"
+            },
+            {
+              "id": 20,
+              "datetime": "2026-02-14T04:41",
+              "type": "login"
+            },
+            {
+              "id": 21,
+              "datetime": "2026-02-14T10:40",
+              "type": "logout"
+            },
+            {
+              "id": 22,
+              "datetime": "2026-02-14T14:42",
+              "type": "login"
+            },
+            {
+              "id": 23,
+              "datetime": "2026-02-14T17:10",
+              "type": "logout"
+            },
+            {
+              "id": 24,
+              "datetime": "2026-02-14T22:10",
+              "type": "login"
+            },
+            {
+              "id": 25,
+              "datetime": "2026-02-14T23:10",
+              "type": "logout"
+            },
+            {
+              "id": 26,
+              "datetime": "2026-02-15T01:46",
+              "type": "login"
+            }
+          ]
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": 101,
+      "minDatetime": "2026-02-14T00:00",
+      "maxDatetime": "2026-02-15T04:00",
+      "enabled": false,
+      "rows": [
+        {
+          "id": 102,
+          "driverKey": "d7",
+          "events": [
+            {
+              "id": 104,
+              "datetime": "2026-02-14T04:20",
+              "type": "logout"
+            },
+            {
+              "id": 105,
+              "datetime": "2026-02-14T04:40",
+              "type": "login"
+            },
+            {
+              "id": 106,
+              "datetime": "2026-02-14T12:40",
+              "type": "logout"
+            },
+            {
+              "id": 107,
+              "datetime": "2026-02-14T16:40",
+              "type": "login"
+            },
+            {
+              "id": 108,
+              "datetime": "2026-02-14T18:40",
+              "type": "logout"
+            },
+            {
+              "id": 109,
+              "datetime": "2026-02-14T22:42",
+              "type": "login"
+            },
+            {
+              "id": 110,
+              "datetime": "2026-02-15T01:40",
+              "type": "logout"
+            }
+          ]
+        },
+        {
+          "id": 103,
+          "driverKey": "d8",
+          "events": [
+            {
+              "id": 111,
+              "datetime": "2026-02-14T04:10",
+              "type": "logout"
+            },
+            {
+              "id": 112,
+              "datetime": "2026-02-14T04:41",
+              "type": "login"
+            },
+            {
+              "id": 113,
+              "datetime": "2026-02-14T10:40",
+              "type": "logout"
+            },
+            {
+              "id": 114,
+              "datetime": "2026-02-14T14:42",
+              "type": "login"
+            },
+            {
+              "id": 115,
+              "datetime": "2026-02-14T17:10",
+              "type": "logout"
+            },
+            {
+              "id": 116,
+              "datetime": "2026-02-14T21:10",
+              "type": "login"
+            },
+            {
+              "id": 117,
+              "datetime": "2026-02-14T22:10",
+              "type": "logout"
+            },
+            {
+              "id": 118,
+              "datetime": "2026-02-15T01:46",
+              "type": "login"
+            }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "id": 119,
+          "rowId": 103,
+          "fromIdx": 5,
+          "toIdx": 7,
+          "minutes": -60,
+          "timestamp": "1:57:37 PM"
+        }
+      ]
+    },
+    {
+      "id": 138,
+      "minDatetime": "2026-02-14T00:00",
+      "maxDatetime": "2026-02-15T04:00",
+      "enabled": false,
+      "rows": [
+        {
+          "id": 139,
+          "driverKey": "d7",
+          "events": [
+            {
+              "id": 141,
+              "datetime": "2026-02-14T04:20",
+              "type": "logout"
+            },
+            {
+              "id": 142,
+              "datetime": "2026-02-14T04:40",
+              "type": "login"
+            },
+            {
+              "id": 143,
+              "datetime": "2026-02-14T12:40",
+              "type": "logout"
+            },
+            {
+              "id": 144,
+              "datetime": "2026-02-14T16:40",
+              "type": "login"
+            },
+            {
+              "id": 145,
+              "datetime": "2026-02-14T18:40",
+              "type": "logout"
+            },
+            {
+              "id": 146,
+              "datetime": "2026-02-14T22:42",
+              "type": "login"
+            },
+            {
+              "id": 147,
+              "datetime": "2026-02-15T01:40",
+              "type": "logout"
+            }
+          ]
+        },
+        {
+          "id": 140,
+          "driverKey": "d8",
+          "events": [
+            {
+              "id": 148,
+              "datetime": "2026-02-14T04:10",
+              "type": "logout"
+            },
+            {
+              "id": 149,
+              "datetime": "2026-02-14T04:41",
+              "type": "login"
+            },
+            {
+              "id": 150,
+              "datetime": "2026-02-14T10:40",
+              "type": "logout"
+            },
+            {
+              "id": 151,
+              "datetime": "2026-02-14T13:42",
+              "type": "login"
+            },
+            {
+              "id": 152,
+              "datetime": "2026-02-14T16:10",
+              "type": "logout"
+            },
+            {
+              "id": 153,
+              "datetime": "2026-02-14T21:10",
+              "type": "login"
+            },
+            {
+              "id": 154,
+              "datetime": "2026-02-14T22:10",
+              "type": "logout"
+            },
+            {
+              "id": 155,
+              "datetime": "2026-02-15T01:46",
+              "type": "login"
+            }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "id": 156,
+          "rowId": 140,
+          "fromIdx": 3,
+          "toIdx": 5,
+          "minutes": -60,
+          "timestamp": "2:00:23 PM"
+        }
+      ]
+    },
+    {
+      "id": 175,
+      "minDatetime": "2026-02-14T00:00",
+      "maxDatetime": "2026-02-15T04:00",
+      "enabled": false,
+      "rows": [
+        {
+          "id": 176,
+          "driverKey": "d7",
+          "events": [
+            {
+              "id": 178,
+              "datetime": "2026-02-14T04:20",
+              "type": "logout"
+            },
+            {
+              "id": 179,
+              "datetime": "2026-02-14T04:40",
+              "type": "login"
+            },
+            {
+              "id": 180,
+              "datetime": "2026-02-14T12:40",
+              "type": "logout"
+            },
+            {
+              "id": 181,
+              "datetime": "2026-02-14T16:40",
+              "type": "login"
+            },
+            {
+              "id": 182,
+              "datetime": "2026-02-14T18:40",
+              "type": "logout"
+            },
+            {
+              "id": 183,
+              "datetime": "2026-02-14T22:42",
+              "type": "login"
+            },
+            {
+              "id": 184,
+              "datetime": "2026-02-15T01:40",
+              "type": "logout"
+            }
+          ]
+        },
+        {
+          "id": 177,
+          "driverKey": "d8",
+          "events": [
+            {
+              "id": 185,
+              "datetime": "2026-02-14T04:10",
+              "type": "logout"
+            },
+            {
+              "id": 186,
+              "datetime": "2026-02-14T04:41",
+              "type": "login"
+            },
+            {
+              "id": 187,
+              "datetime": "2026-02-14T10:40",
+              "type": "logout"
+            },
+            {
+              "id": 188,
+              "datetime": "2026-02-14T13:42",
+              "type": "login"
+            },
+            {
+              "id": 189,
+              "datetime": "2026-02-14T16:10",
+              "type": "logout"
+            },
+            {
+              "id": 190,
+              "datetime": "2026-02-14T21:39",
+              "type": "login"
+            },
+            {
+              "id": 191,
+              "datetime": "2026-02-14T22:39",
+              "type": "logout"
+            },
+            {
+              "id": 192,
+              "datetime": "2026-02-15T01:46",
+              "type": "login"
+            }
+          ]
+        }
+      ],
+      "history": []
+    },
+    {
+      "id": 20,
+      "minDatetime": "2026-02-14T00:00",
+      "maxDatetime": "2026-02-15T04:00",
+      "enabled": false,
+      "rows": [
+        {
+          "id": 21,
+          "driverKey": "d7",
+          "events": [
+            {
+              "id": 23,
+              "datetime": "2026-02-14T04:20",
+              "type": "logout"
+            },
+            {
+              "id": 24,
+              "datetime": "2026-02-14T04:40",
+              "type": "login"
+            },
+            {
+              "id": 25,
+              "datetime": "2026-02-14T12:40",
+              "type": "logout"
+            },
+            {
+              "id": 26,
+              "datetime": "2026-02-14T19:35",
+              "type": "login"
+            },
+            {
+              "id": 27,
+              "datetime": "2026-02-14T21:35",
+              "type": "logout"
+            },
+            {
+              "id": 28,
+              "datetime": "2026-02-14T22:42",
+              "type": "login"
+            },
+            {
+              "id": 29,
+              "datetime": "2026-02-15T01:40",
+              "type": "logout"
+            }
+          ]
+        },
+        {
+          "id": 22,
+          "driverKey": "d8",
+          "events": [
+            {
+              "id": 30,
+              "datetime": "2026-02-14T04:10",
+              "type": "logout"
+            },
+            {
+              "id": 31,
+              "datetime": "2026-02-14T04:41",
+              "type": "login"
+            },
+            {
+              "id": 32,
+              "datetime": "2026-02-14T10:40",
+              "type": "logout"
+            },
+            {
+              "id": 33,
+              "datetime": "2026-02-14T17:02",
+              "type": "login"
+            },
+            {
+              "id": 34,
+              "datetime": "2026-02-14T19:30",
+              "type": "logout"
+            },
+            {
+              "id": 35,
+              "datetime": "2026-02-14T21:39",
+              "type": "login"
+            },
+            {
+              "id": 36,
+              "datetime": "2026-02-14T22:39",
+              "type": "logout"
+            },
+            {
+              "id": 37,
+              "datetime": "2026-02-15T01:46",
+              "type": "login"
+            }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "id": 38,
+          "rowId": 21,
+          "fromIdx": 5,
+          "toIdx": 3,
+          "minutes": -175,
+          "timestamp": "2:32:51 PM"
+        },
+        {
+          "id": 39,
+          "rowId": 22,
+          "fromIdx": 5,
+          "toIdx": 3,
+          "minutes": -180,
+          "timestamp": "2:33:36 PM"
+        },
+        {
+          "id": 40,
+          "rowId": 22,
+          "fromIdx": 5,
+          "toIdx": 3,
+          "minutes": -20,
+          "timestamp": "2:35:19 PM"
+        }
+      ]
+    },
+    {
+      "id": 96,
+      "minDatetime": "2026-02-14T00:00",
+      "maxDatetime": "2026-02-15T04:00",
+      "enabled": false,
+      "rows": [
+        {
+          "id": 97,
+          "driverKey": "d7",
+          "events": [
+            {
+              "id": 99,
+              "datetime": "2026-02-14T04:20",
+              "type": "logout"
+            },
+            {
+              "id": 100,
+              "datetime": "2026-02-14T08:40",
+              "type": "login"
+            },
+            {
+              "id": 101,
+              "datetime": "2026-02-14T16:40",
+              "type": "logout"
+            },
+            {
+              "id": 102,
+              "datetime": "2026-02-14T19:35",
+              "type": "login"
+            },
+            {
+              "id": 103,
+              "datetime": "2026-02-14T21:35",
+              "type": "logout"
+            },
+            {
+              "id": 104,
+              "datetime": "2026-02-14T22:42",
+              "type": "login"
+            },
+            {
+              "id": 105,
+              "datetime": "2026-02-15T01:40",
+              "type": "logout"
+            }
+          ]
+        },
+        {
+          "id": 98,
+          "driverKey": "d8",
+          "events": [
+            {
+              "id": 106,
+              "datetime": "2026-02-14T04:10",
+              "type": "logout"
+            },
+            {
+              "id": 107,
+              "datetime": "2026-02-14T04:41",
+              "type": "login"
+            },
+            {
+              "id": 108,
+              "datetime": "2026-02-14T10:40",
+              "type": "logout"
+            },
+            {
+              "id": 109,
+              "datetime": "2026-02-14T17:02",
+              "type": "login"
+            },
+            {
+              "id": 110,
+              "datetime": "2026-02-14T19:30",
+              "type": "logout"
+            },
+            {
+              "id": 111,
+              "datetime": "2026-02-14T21:39",
+              "type": "login"
+            },
+            {
+              "id": 112,
+              "datetime": "2026-02-14T22:39",
+              "type": "logout"
+            },
+            {
+              "id": 113,
+              "datetime": "2026-02-15T01:46",
+              "type": "login"
+            }
+          ]
+        }
+      ],
+      "history": [
+        {
+          "id": 114,
+          "rowId": 97,
+          "fromIdx": 3,
+          "toIdx": 1,
+          "minutes": -240,
+          "timestamp": "2:40:36 PM"
+        }
+      ]
+    },
+    {
+      "id": 133,
+      "minDatetime": "2026-02-14T00:00",
+      "maxDatetime": "2026-02-15T04:00",
+      "enabled": true,
+      "rows": [
+        {
+          "id": 134,
+          "driverKey": "d7",
+          "events": [
+            {
+              "id": 136,
+              "datetime": "2026-02-14T04:20",
+              "type": "logout"
+            },
+            {
+              "id": 137,
+              "datetime": "2026-02-14T08:40",
+              "type": "login"
+            },
+            {
+              "id": 138,
+              "datetime": "2026-02-14T16:40",
+              "type": "logout"
+            },
+            {
+              "id": 139,
+              "datetime": "2026-02-14T19:35",
+              "type": "login"
+            },
+            {
+              "id": 140,
+              "datetime": "2026-02-14T21:35",
+              "type": "logout"
+            },
+            {
+              "id": 141,
+              "datetime": "2026-02-14T22:42",
+              "type": "login"
+            },
+            {
+              "id": 142,
+              "datetime": "2026-02-15T01:40",
+              "type": "logout"
+            }
+          ]
+        },
+        {
+          "id": 135,
+          "driverKey": "d8",
+          "events": [
+            {
+              "id": 143,
+              "datetime": "2026-02-14T02:10",
+              "type": "logout"
+            },
+            {
+              "id": 144,
+              "datetime": "2026-02-14T02:38",
+              "type": "login"
+            },
+            {
+              "id": 145,
+              "datetime": "2026-02-14T08:37",
+              "type": "logout"
+            },
+            {
+              "id": 146,
+              "datetime": "2026-02-14T17:02",
+              "type": "login"
+            },
+            {
+              "id": 147,
+              "datetime": "2026-02-14T19:30",
+              "type": "logout"
+            },
+            {
+              "id": 148,
+              "datetime": "2026-02-14T21:39",
+              "type": "login"
+            },
+            {
+              "id": 149,
+              "datetime": "2026-02-14T22:39",
+              "type": "logout"
+            },
+            {
+              "id": 150,
+              "datetime": "2026-02-15T01:46",
+              "type": "login"
+            }
+          ]
+        }
+      ],
+      "history": []
+    }
+  ]
+}
